@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>整理券照会・キャンセル</title>
+  <h1 class="page-header">飛翔祭 NBQ 早押しクイズ体験</h1>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f0f0f0;
+      padding: 2em;
+    }
+
+    .container {
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: auto;
+    }
+
+    input[type="text"], button {
+      width: 100%;
+      padding: 0.5em;
+      margin-top: 0.5em;
+      box-sizing: border-box;
+    }
+
+    .message {
+      margin-top: 1em;
+      font-weight: bold;
+      color: #333;
+      white-space: pre-line;
+    }
+
+    .page-header {
+      text-align: center;
+      font-size: 2em;
+      color: #1e3a8a; /* 群青色（Tailwindのblue-800相当） */
+      margin-bottom: 1em;
+    }
+
+    #detailsArea, #cancelArea {
+      margin-top: 1em;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <label for="ticketNo">整理券番号：</label>
+    <input type="text" id="ticketNo" onblur="fetchDetails()">
+
+   <div id="loadingDisplay"><br></div>
+<div id="errorDisplay" style="display:none; color: crimson; font-weight: bold;"><br></div> 
+<div id="detailsArea" style="display:none;">
+  <div id="countDisplay"><br></div>
+  <div id="timeDisplay"><br></div>
+  <div id="contentDisplay"><br></div>
+</div>
+
+    <div id="cancelArea">
+      <label for="cancelCode">キャンセルコード：</label>
+      <input type="text" id="cancelCode">
+      <button onclick="submitCancel()">キャンセルする</button>
+    </div>
+
+    <div id="resultMessage" class="message"></div>
+  </div>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwY2UFawGSzHBHuHvw7WLM5_swXHffLI85eZ310o-XoLxwq-3NQsxKaTHSxq5_c03lV/exec";
+
+    const loadingIntervals = {};
+
+    function startLoadingAnimation(targetId, baseText = "お待ちください") {
+      const target = document.getElementById(targetId);
+      if (!target) return;
+
+      let dots = 0;
+      loadingIntervals[targetId] = setInterval(() => {
+        dots = (dots + 1) % 4;
+        target.textContent = baseText + ".".repeat(dots);
+      }, 500);
+    }
+
+    function stopLoadingAnimation(targetId, finalText) {
+      clearInterval(loadingIntervals[targetId]);
+      delete loadingIntervals[targetId];
+
+      const target = document.getElementById(targetId);
+      if (target) target.textContent = finalText;
+    }
+
+    function fetchDetails() {
+  const ticketNo = document.getElementById("ticketNo").value.trim();
+  if (!ticketNo) return;
+
+  const loadingDiv = document.getElementById("loadingDisplay");
+  const errorDiv = document.getElementById("errorDisplay");
+  const countDiv = document.getElementById("countDisplay");
+  const timeDiv = document.getElementById("timeDisplay");
+  const contentDiv = document.getElementById("contentDisplay");
+
+  // 初期化
+  loadingDiv.style.display = "block";
+  errorDiv.style.display = "none";
+  document.getElementById("detailsArea").style.display = "none";
+  document.getElementById("cancelArea").style.display = "none";
+
+  // アニメーション開始（1行のみ）
+  let dots = 0;
+  const intervalId = setInterval(() => {
+    dots = (dots + 1) % 4;
+    loadingDiv.textContent = "照会中" + ".".repeat(dots);
+  }, 500);
+
+  fetch(`${scriptURL}?mode=lookup&ticketNo=${encodeURIComponent(ticketNo)}`)
+    .then(res => res.json())
+    .then(data => {
+      clearInterval(intervalId);
+      loadingDiv.style.display = "none";
+
+      if (!data || !data.count) {
+        errorDiv.textContent = "該当なし：整理券が見つかりませんでした";
+        errorDiv.style.display = "block";
+        return;
+      }
+
+      countDiv.textContent = `人数：${data.count}人`;
+      timeDiv.textContent = `時間：${data.time}`;
+      contentDiv.textContent = `内容：${data.content}`;
+      document.getElementById("detailsArea").style.display = "block";
+      document.getElementById("cancelArea").style.display = "block";
+    })
+    .catch(err => {
+      clearInterval(intervalId);
+      loadingDiv.style.display = "none";
+      errorDiv.textContent = "通信エラーが発生しました";
+      errorDiv.style.display = "block";
+    });
+}
+
+    function submitCancel() {
+      const ticketNo = document.getElementById("ticketNo").value.trim();
+      const cancelCode = document.getElementById("cancelCode").value.trim();
+      const resultDiv = document.getElementById("resultMessage");
+
+      if (!ticketNo || !cancelCode) {
+        alert("整理券番号とキャンセルコードを入力してください。");
+        return;
+      }
+
+      if (!confirm("キャンセルしますか？")) return;
+
+      resultDiv.textContent = "お待ちください...";
+      let dots = 0;
+      const interval = setInterval(() => {
+        dots = (dots + 1) % 4;
+        resultDiv.textContent = "お待ちください" + ".".repeat(dots);
+      }, 500);
+
+      fetch(`${scriptURL}?mode=cancel&ticketNo=${encodeURIComponent(ticketNo)}&cancelCode=${encodeURIComponent(cancelCode)}`)
+        .then(res => res.text())
+        .then(msg => {
+          clearInterval(interval);
+          resultDiv.textContent = msg;
+        })
+        .catch(err => {
+          clearInterval(interval);
+          resultDiv.textContent = "通信エラーが発生しました。";
+        });
+    }
+  </script>
+</body>
+</html>
