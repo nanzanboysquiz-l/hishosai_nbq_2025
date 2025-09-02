@@ -2,80 +2,70 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>予約受付フォーム</title>
-  <style>
-    body { font-family: "BIZ UDPGothic", sans-serif; text-align: center; padding: 2em; }
-    input, select, button { margin: 0.5em; padding: 0.5em; font-size: 1em; }
-    #result { margin-top: 2em; font-size: 1.2em; color: #1e3a8a; white-space: pre-line; }
-  </style>
+  <title>予約フォーム</title>
+  <script>
+    let timeOptions = {};
+
+    async function fetchTimeSlots() {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbwO_S_JIllc2xl7Zvo3i3ZuB_RT_WEIlhXHnizu5ddbYF9oHkoVA-mHquKUTYhUaNCl/exec"); // doGetで時間枠取得
+      timeOptions = await res.json();
+    }
+
+    function updateTimeSlots() {
+      const content = document.getElementById("content").value;
+      const timeSelect = document.getElementById("time");
+      timeSelect.innerHTML = "";
+
+      if (timeOptions[content]) {
+        timeOptions[content].forEach(t => {
+          const opt = document.createElement("option");
+          opt.value = t;
+          opt.textContent = t;
+          timeSelect.appendChild(opt);
+        });
+      }
+    }
+
+    async function submitForm(e) {
+      e.preventDefault();
+      const count = document.getElementById("count").value;
+      const content = document.getElementById("content").value;
+      const time = document.getElementById("time").value;
+
+      const res = await fetch("YOUR_SCRIPT_URL", {
+        method: "POST",
+        body: JSON.stringify({ count, content, time }),
+        headers: { "Content-Type": "application/json" }
+      });
+
+      const result = await res.json();
+      document.getElementById("result").textContent =
+        `予約No: ${result.no} / キャンセルコード: ${result.cancelCode}`;
+    }
+
+    window.onload = fetchTimeSlots;
+  </script>
 </head>
 <body>
-  <h1 class="page-header">飛翔祭 NBQ 早押しクイズ体験</h1>
+  <h2>予約登録フォーム</h2>
+  <form onsubmit="submitForm(event)">
+    <label>人数：</label>
+    <input type="number" id="count" required><br>
 
-  <form id="reservationForm">
-    <label>時間:
-      <select id="time" required>
-        <option value="">選択してください</option>
-        <option value="10:00">10:00</option>
-        <option value="10:30">10:30</option>
-        <option value="11:00">11:00</option>
-        <option value="11:30">11:30</option>
-        <option value="12:00">12:00</option>
-        <option value="13:00">13:00</option>
-        <option value="14:00">14:00</option>
-        <option value="15:00">15:00</option>
-      </select>
-    </label><br>
+    <label>内容：</label>
+    <select id="content" onchange="updateTimeSlots()" required>
+      <option value="">選択してください</option>
+      <option value="A体験">A体験</option>
+      <option value="B講座">B講座</option>
+      <option value="C相談">C相談</option>
+    </select><br>
 
-    <label>人数:
-      <input type="number" id="count" min="1" required style="width: 3em;">
-    </label><br>
+    <label>時間枠：</label>
+    <select id="time" required></select><br>
 
     <button type="submit">予約する</button>
   </form>
 
-  <div id="result"></div>
-
-  <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwY2UFawGSzHBHuHvw7WLM5_swXHffLI85eZ310o-XoLxwq-3NQsxKaTHSxq5_c03lV/exec";
-
-    document.getElementById("reservationForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-
-      const time = document.getElementById("time").value;
-      const count = parseInt(document.getElementById("count").value, 10);
-      const cNumber = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-
-      const payload = { time, count, cNumber };
-      const resultDiv = document.getElementById("result");
-      const button = document.querySelector("button");
-
-      resultDiv.textContent = "送信中...";
-      button.disabled = true;
-
-      try {
-        const response = await fetch(scriptURL, {
-          method: "POST",
-          body: JSON.stringify(payload),
-          headers: { "Content-Type": "text/plain" } // ← プリフライト回避
-        });
-
-        const result = await response.json();
-
-        if (result.status === "success") {
-          resultDiv.textContent =
-            `時間：${time}\n人数：${count}\nNo. ${result.id}　C番 ${cNumber}`;
-          button.textContent = "送信完了";
-        } else {
-          throw new Error(result.message || "不明なエラー");
-        }
-      } catch (error) {
-        console.error(error);
-        resultDiv.textContent = "送信に失敗しました。";
-        button.disabled = false;
-        button.textContent = "再送信";
-      }
-    });
-  </script>
+  <p id="result"></p>
 </body>
 </html>
