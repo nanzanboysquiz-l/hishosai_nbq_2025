@@ -7,8 +7,15 @@
     let timeOptions = {};
 
     async function fetchTimeSlots() {
-      const res = await fetch("https://script.google.com/macros/s/AKfycbwO_S_JIllc2xl7Zvo3i3ZuB_RT_WEIlhXHnizu5ddbYF9oHkoVA-mHquKUTYhUaNCl/exec"); // doGetで時間枠取得
+      const res = await fetch("https://script.google.com/macros/s/AKfycbwO_S_JIllc2xl7Zvo3i3ZuB_RT_WEIlhXHnizu5ddbYF9oHkoVA-mHquKUTYhUaNCl/exec");
       timeOptions = await res.json();
+    }
+
+    function formatTime(isoString) {
+      const date = new Date(isoString);
+      const hh = String(date.getHours()).padStart(2, '0');
+      const mm = String(date.getMinutes()).padStart(2, '0');
+      return `${hh}:${mm}`;
     }
 
     function updateTimeSlots() {
@@ -20,7 +27,7 @@
         timeOptions[content].forEach(t => {
           const opt = document.createElement("option");
           opt.value = t;
-          opt.textContent = t;
+          opt.textContent = formatTime(t); // ← 表示用に整形
           timeSelect.appendChild(opt);
         });
       }
@@ -70,4 +77,3 @@
   <p id="result"></p>
 </body>
 </html>
-
