@@ -3,6 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <title>予約フォーム</title>
+  <style>
+    body {
+      font-family: "Segoe UI", "ヒラギノ角ゴ ProN", "メイリオ", sans-serif;
+      background-color: #f5f5f5;
+      padding: 30px;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    form {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      max-width: 400px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    input[type="number"]#count {
+      width: 4em; /* 全角2文字分程度の幅 */
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #0078D4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #005ea2;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #0078D4;
+    }
+  </style>
   <script>
     let timeOptions = {};
 
@@ -27,7 +89,7 @@
         timeOptions[content].forEach(t => {
           const opt = document.createElement("option");
           opt.value = t;
-          opt.textContent = formatTime(t); // ← 表示用に整形
+          opt.textContent = formatTime(t);
           timeSelect.appendChild(opt);
         });
       }
@@ -56,20 +118,20 @@
 <body>
   <h2>予約登録フォーム</h2>
   <form onsubmit="submitForm(event)">
-    <label>人数：</label>
-    <input type="number" id="count" required><br>
+    <label for="count">人数：</label>
+    <input type="number" id="count" required>
 
-    <label>内容：</label>
+    <label for="content">内容：</label>
     <select id="content" onchange="updateTimeSlots()" required>
       <option value="">選択してください</option>
       <option value="初心者早押し">初心者早押し</option>
       <option value="初心者パネル">初心者パネル</option>
       <option value="経験者早押し">経験者早押し</option>
       <option value="経験者パネル">経験者パネル</option>
-    </select><br>
+    </select>
 
-    <label>時間枠：</label>
-    <select id="time" required></select><br>
+    <label for="time">時間枠：</label>
+    <select id="time" required></select>
 
     <button type="submit">予約する</button>
   </form>
