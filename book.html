@@ -104,7 +104,7 @@
       const content = document.getElementById("content").value;
       const time = document.getElementById("time").value;
 
-      const res = await fetch("YOUR_SCRIPT_URL", {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbwO_S_JIllc2xl7Zvo3i3ZuB_RT_WEIlhXHnizu5ddbYF9oHkoVA-mHquKUTYhUaNCl/exec", {
         method: "POST",
         body: JSON.stringify({ count, content, time }),
         headers: { "Content-Type": "application/json" }
@@ -142,4 +142,5 @@
   <p id="result"></p>
 </body>
 </html>
+
 
