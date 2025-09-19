@@ -50,7 +50,8 @@
 <body>
   <div class="container">
     <label for="ticketNo">整理券番号：</label>
-    <input type="text" id="ticketNo" onblur="fetchDetails()">
+    <input type="text" id="ticketNo">
+    <button onclick="fetchDetails()">照会</button>
 
    <div id="loadingDisplay"><br></div>
 <div id="errorDisplay" style="display:none; color: crimson; font-weight: bold;"><br></div> 
@@ -175,3 +176,4 @@
   </script>
 </body>
 </html>
+
